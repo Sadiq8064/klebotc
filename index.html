@@ -215,7 +215,7 @@
         .recent-learning-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 24px; /* Increased for better spacing */
+            gap: 24px;
         }
 
         /* Playlists Section */
@@ -230,7 +230,7 @@
         .playlists-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 24px; /* Increased for better spacing */
+            gap: 24px;
         }
 
         .playlist-card, .recent-video-card {
@@ -256,7 +256,7 @@
         }
 
         .playlist-info, .recent-video-info {
-            padding: 12px; /* Increased for better internal spacing */
+            padding: 12px;
         }
 
         .playlist-title, .recent-video-title {
@@ -276,7 +276,7 @@
             font-weight: 400;
         }
 
-        /* Progress Bar for Recent Videos */
+        /* Progress Bar for Videos */
         .progress-container {
             margin-top: 8px;
             background: #e5e7eb;
@@ -333,7 +333,7 @@
         .videos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 24px; /* Increased for consistency */
+            gap: 24px;
         }
 
         .video-card {
@@ -354,7 +354,7 @@
         .video-thumbnail-container {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* 16:9 aspect ratio */
+            padding-top: 56.25%;
             overflow: hidden;
         }
 
@@ -369,7 +369,7 @@
         }
 
         .video-info {
-            padding: 12px; /* Increased for better internal spacing */
+            padding: 12px;
         }
 
         .video-title {
@@ -411,7 +411,7 @@
         .video-player {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* 16:9 aspect ratio */
+            padding-top: 56.25%;
             margin-bottom: 20px;
             border-radius: 12px;
             overflow: hidden;
@@ -634,6 +634,7 @@
         let playlists = [];
         let videos = [];
         let recentVideos = [];
+        let videoProgress = {};
 
         // Initialize the app
         function init() {
@@ -653,6 +654,7 @@
             addBtn.addEventListener('click', openDialog);
             loadSavedPlaylists();
             loadRecentVideos();
+            loadVideoProgress();
             setupYouTubePlayerAPI();
         }
 
@@ -662,6 +664,20 @@
             tag.src = 'https://www.youtube.com/iframe_api';
             const firstScriptTag = document.getElementsByTagName('script')[0];
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+
+        // Load video progress from localStorage
+        function loadVideoProgress() {
+            const savedProgress = localStorage.getItem('videoProgress');
+            if (savedProgress) {
+                videoProgress = JSON.parse(savedProgress);
+            }
+        }
+
+        // Save video progress to localStorage
+        function saveVideoProgress(videoId, progress) {
+            videoProgress[videoId] = Math.max(videoProgress[videoId] || 0, progress);
+            localStorage.setItem('videoProgress', JSON.stringify(videoProgress));
         }
 
         // Open dialog box
@@ -772,60 +788,131 @@
         }
 
         // Handle single video as a playlist or direct to player
-        function fetchVideoAsPlaylist(videoId, goToPlayer = false) {
-            fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${API_KEY}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.items && data.items.length > 0) {
-                        const videoInfo = data.items[0].snippet;
-                        const playlistInfo = {
-                            title: videoInfo.title,
-                            description: 'Single video',
-                            thumbnails: videoInfo.thumbnails
-                        };
-                        const videos = [{
-                            title: videoInfo.title,
-                            resourceId: { videoId: videoId },
-                            thumbnails: videoInfo.thumbnails
-                        }];
-                        currentPlaylistId = videoId;
-                        savePlaylist(videoId, playlistInfo, videos);
-                        renderPlaylists();
-                        if (goToPlayer) {
-                            showPlayerScreen(videoId, videoInfo.title, videoId, videoInfo.thumbnails.medium.url);
-                        } else {
-                            showPlaylistScreen(playlistInfo, videos);
-                        }
-                        closeDialog();
-                    } else {
-                        throw new Error('Video not found');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching video:', error);
-                    showError('Failed to load video. Please check the URL and try again.');
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                    dialogSubmitBtn.disabled = false;
-                    hideLoading();
-                });
-        }
+function fetchVideoAsPlaylist(videoId, goToPlayer = false) {
+    fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${API_KEY}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`YouTube API error: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.items || data.items.length === 0) {
+                throw new Error('Video not found');
+            }
+
+            const videoInfo = data.items[0].snippet;
+            const duration = data.items[0].contentDetails.duration;
+            
+            // Create a "playlist" structure for single video
+            const playlistInfo = {
+                title: videoInfo.title,
+                description: videoInfo.description || 'Single video',
+                thumbnails: videoInfo.thumbnails,
+                channelTitle: videoInfo.channelTitle,
+                publishedAt: videoInfo.publishedAt
+            };
+
+            const videos = [{
+                title: videoInfo.title,
+                description: videoInfo.description,
+                resourceId: { videoId: videoId },
+                thumbnails: videoInfo.thumbnails,
+                duration: formatDuration(duration),
+                position: 1,
+                channelTitle: videoInfo.channelTitle,
+                publishedAt: videoInfo.publishedAt
+            }];
+
+            currentPlaylistId = `single_${videoId}`; // Prefix to identify single videos
+            
+            // Save to playlists storage
+            savePlaylist(currentPlaylistId, playlistInfo, videos);
+            
+            // Update recent videos
+            saveRecentVideo(
+                videoId, 
+                videoInfo.title, 
+                videoInfo.thumbnails?.medium?.url, 
+                currentPlaylistId
+            );
+
+            // Either go directly to player or show as single-video playlist
+            if (goToPlayer) {
+                showPlayerScreen(
+                    videoId, 
+                    videoInfo.title, 
+                    currentPlaylistId, 
+                    videoInfo.thumbnails?.medium?.url
+                );
+            } else {
+                showPlaylistScreen(playlistInfo, videos);
+            }
+            
+            // Update UI
+            renderPlaylists();
+            renderRecentVideos();
+        })
+        .catch(error => {
+            console.error('Error fetching video:', error);
+            showError('Failed to load video. Please check the URL and try again.');
+            
+            // Re-enable buttons if failed
+            submitBtn.disabled = false;
+            dialogSubmitBtn.disabled = false;
+        })
+        .finally(() => {
+            hideLoading();
+        });
+}
+
+// Helper function to format ISO 8601 duration
+function formatDuration(duration) {
+    if (!duration) return 'N/A';
+    
+    const matches = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+    const hours = (matches[1] ? parseInt(matches[1]) : 0);
+    const minutes = (matches[2] ? parseInt(matches[2]) : 0);
+    const seconds = (matches[3] ? parseInt(matches[3]) : 0);
+    
+    return [
+        hours ? `${hours}h` : '',
+        minutes ? `${minutes}m` : '',
+        seconds ? `${seconds}s` : ''
+    ].filter(Boolean).join(' ') || '0s';
+}
+
 
         // Save playlist to localStorage
         function savePlaylist(playlistId, playlistInfo, videos) {
             const playlistData = {
                 id: playlistId,
-                info: playlistInfo,
-                videos: videos
+                info: playlistInfo || {},
+                videos: Array.isArray(videos) ? videos : []
             };
-            const existingIndex = playlists.findIndex(p => p.id === playlistId);
+            
+            // Load existing playlists
+            const existingPlaylists = JSON.parse(localStorage.getItem('youtubePlaylists') || '[]');
+            
+            // Check if playlist already exists
+            const existingIndex = existingPlaylists.findIndex(p => p.id === playlistId);
+            
             if (existingIndex >= 0) {
-                playlists[existingIndex] = playlistData;
+                // Update existing playlist
+                existingPlaylists[existingIndex] = playlistData;
             } else {
-                playlists.unshift(playlistData);
+                // Add new playlist at beginning
+                existingPlaylists.unshift(playlistData);
+                
+                // Limit to 50 playlists to prevent storage issues
+                if (existingPlaylists.length > 50) {
+                    existingPlaylists.pop();
+                }
             }
-            localStorage.setItem('youtubePlaylists', JSON.stringify(playlists));
+            
+            // Save back to localStorage
+            localStorage.setItem('youtubePlaylists', JSON.stringify(existingPlaylists));
+            playlists = existingPlaylists;
         }
 
         // Load saved playlists from localStorage
@@ -834,9 +921,12 @@
             if (savedPlaylists) {
                 playlists = JSON.parse(savedPlaylists);
                 renderPlaylists();
-            } else {
-                inputSection.style.display = 'block';
-                playlistsSection.classList.remove('active');
+                
+                // Show playlists section if we have any
+                if (playlists.length > 0) {
+                    playlistsSection.classList.add('active');
+                    inputSection.style.display = 'none';
+                }
             }
         }
 
@@ -849,110 +939,111 @@
             }
         }
 
-        // Save recent video with its own thumbnail and progress
-        function saveRecentVideo(videoId, videoTitle, thumbnail, playlistId, progress = 0) {
-            // Fetch the video's thumbnail if not provided
-            if (!thumbnail || thumbnail.includes('via.placeholder.com')) {
-                fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${API_KEY}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.items && data.items.length > 0) {
-                            const videoInfo = data.items[0].snippet;
-                            thumbnail = videoInfo.thumbnails?.medium?.url || 'https://via.placeholder.com/320x180?text=No+Thumbnail';
-                            updateRecentVideo(videoId, videoTitle, thumbnail, playlistId, progress);
-                            renderRecentVideos();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching video thumbnail:', error);
-                        thumbnail = 'https://via.placeholder.com/320x180?text=No+Thumbnail';
-                        updateRecentVideo(videoId, videoTitle, thumbnail, playlistId, progress);
-                        renderRecentVideos();
-                    });
-            } else {
-                updateRecentVideo(videoId, videoTitle, thumbnail, playlistId, progress);
-                renderRecentVideos();
-            }
-        }
-
-        // Helper function to update recent video in array and localStorage
-        function updateRecentVideo(videoId, videoTitle, thumbnail, playlistId, progress) {
+        // Save recent video with thumbnail
+        function saveRecentVideo(videoId, videoTitle, thumbnail, playlistId) {
+            // Create video data object
             const videoData = {
                 id: videoId,
                 title: videoTitle,
-                thumbnail: thumbnail,
+                thumbnail: thumbnail || 'https://via.placeholder.com/320x180?text=No+Thumbnail',
                 playlistId: playlistId,
-                progress: progress // Store progress percentage
+                timestamp: Date.now()
             };
-            const existingIndex = recentVideos.findIndex(v => v.id === videoId);
-            if (existingIndex >= 0) {
-                recentVideos.splice(existingIndex, 1);
-            }
-            recentVideos.unshift(videoData);
-            if (recentVideos.length > 3) {
-                recentVideos.pop();
-            }
-            localStorage.setItem('recentVideos', JSON.stringify(recentVideos));
+            
+            // Load existing recent videos
+            const existingRecentVideos = JSON.parse(localStorage.getItem('recentVideos') || '[]');
+            
+            // Remove if already exists
+            const filteredVideos = existingRecentVideos.filter(v => v.id !== videoId);
+            
+            // Add new video at beginning
+            filteredVideos.unshift(videoData);
+            
+            // Keep only the 6 most recent
+            const updatedRecentVideos = filteredVideos.slice(0, 6);
+            
+            // Save back to localStorage
+            localStorage.setItem('recentVideos', JSON.stringify(updatedRecentVideos));
+            recentVideos = updatedRecentVideos;
         }
 
         // Render recent videos with progress
         function renderRecentVideos() {
             recentLearningGrid.innerHTML = '';
+            
             if (recentVideos.length === 0) {
                 recentLearningSection.classList.remove('active');
                 return;
             }
+            
             recentLearningSection.classList.add('active');
-            recentVideos.forEach((video, index) => {
+            
+            recentVideos.forEach(video => {
                 const videoCard = document.createElement('div');
                 videoCard.className = 'recent-video-card';
-                const thumbnail = video.thumbnail || 'https://via.placeholder.com/320x180?text=No+Thumbnail';
-                const progress = video.progress || 0;
+                
+                const progress = videoProgress[video.id] ? Math.round(videoProgress[video.id]) : 0;
+                
                 videoCard.innerHTML = `
-                    <img src="${thumbnail}" alt="${video.title}" class="recent-video-thumbnail">
+                    <img src="${video.thumbnail}" alt="${video.title}" class="recent-video-thumbnail">
                     <div class="recent-video-info">
                         <div class="recent-video-title">${video.title}</div>
-                        <div class="recent-video-duration">Video ${index + 1}</div>
+                        <div class="recent-video-duration">Recently watched</div>
                         <div class="progress-container">
                             <div class="progress-bar" style="width: ${progress}%"></div>
                         </div>
-                        <div class="progress-text">${Math.round(progress)}% watched</div>
+                        <div class="progress-text">${progress}% watched</div>
                     </div>
                 `;
+                
                 videoCard.addEventListener('click', () => {
                     showPlayerScreen(video.id, video.title, video.playlistId, video.thumbnail);
                 });
+                
                 recentLearningGrid.appendChild(videoCard);
             });
         }
 
-        // Render playlists on home screen
+        // Render playlists
         function renderPlaylists() {
             playlistsGrid.innerHTML = '';
-            if (playlists.length === 0) {
-                inputSection.style.display = 'block';
+            
+            if (!playlists || playlists.length === 0) {
                 playlistsSection.classList.remove('active');
+                inputSection.style.display = 'block';
                 return;
             }
-            inputSection.style.display = 'none';
+            
             playlistsSection.classList.add('active');
+            inputSection.style.display = 'none';
+            
             playlists.forEach(playlist => {
                 const playlistCard = document.createElement('div');
                 playlistCard.className = 'playlist-card';
-                const thumbnail = playlist.videos[0]?.thumbnails?.medium?.url || 
-                                 playlist.info.thumbnails?.medium?.url || 
-                                 'https://via.placeholder.com/320x180?text=No+Thumbnail';
+                
+                // Get thumbnail - try video thumbnails first, then playlist thumbnail
+                let thumbnail = 'https://via.placeholder.com/320x180?text=No+Thumbnail';
+                if (playlist.videos.length > 0) {
+                    thumbnail = playlist.videos[0].thumbnails?.medium?.url || 
+                               playlist.videos[0].snippet?.thumbnails?.medium?.url;
+                }
+                if (!thumbnail) {
+                    thumbnail = playlist.info.thumbnails?.medium?.url;
+                }
+                
                 playlistCard.innerHTML = `
                     <img src="${thumbnail}" alt="${playlist.info.title}" class="playlist-thumbnail">
                     <div class="playlist-info">
-                        <div class="playlist-title">${playlist.info.title}</div>
+                        <div class="playlist-title">${playlist.info.title || 'Untitled Playlist'}</div>
                         <div class="playlist-video-count">${playlist.videos.length} video${playlist.videos.length !== 1 ? 's' : ''}</div>
                     </div>
                 `;
+                
                 playlistCard.addEventListener('click', () => {
                     currentPlaylistId = playlist.id;
                     showPlaylistScreen(playlist.info, playlist.videos);
                 });
+                
                 playlistsGrid.appendChild(playlistCard);
             });
         }
@@ -963,120 +1054,211 @@
             playerScreen.classList.remove('active');
             playlistScreen.classList.add('active');
             addBtn.classList.remove('active');
-            playlistScreenTitle.textContent = playlistInfo.title;
-            videos = playlistVideos;
+            
+            playlistScreenTitle.textContent = playlistInfo?.title || 'Untitled Playlist';
+            videos = Array.isArray(playlistVideos) ? playlistVideos : [];
+            
             renderVideos();
         }
 
-        // Render videos on playlist screen
+        // Render videos in playlist view
         function renderVideos() {
             videosGrid.innerHTML = '';
+            
+            if (!videos || videos.length === 0) {
+                videosGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No videos found in this playlist</p>';
+                return;
+            }
+            
             videos.forEach((video, index) => {
                 const videoCard = document.createElement('div');
                 videoCard.className = 'video-card';
-                const thumbnail = video.thumbnails?.medium?.url || 'https://via.placeholder.com/320x180?text=No+Thumbnail';
-                const videoId = video.resourceId?.videoId;
+                
+                const videoId = video.resourceId?.videoId || video.id;
+                const title = video.title || video.snippet?.title || 'Untitled Video';
+                
+                // Get thumbnail
+                let thumbnail = video.thumbnails?.medium?.url || 
+                               video.snippet?.thumbnails?.medium?.url ||
+                               'https://via.placeholder.com/320x180?text=No+Thumbnail';
+                
+                // Get progress
+                const progress = videoProgress[videoId] ? Math.round(videoProgress[videoId]) : 0;
+                
+                // Format duration if available
+                let duration = '';
+                if (video.duration) {
+                    duration = video.duration;
+                } else if (video.contentDetails?.duration) {
+                    duration = formatDuration(video.contentDetails.duration);
+                }
+                
                 videoCard.innerHTML = `
                     <div class="video-thumbnail-container">
-                        <img src="${thumbnail}" alt="${video.title}" class="video-thumbnail">
+                        <img src="${thumbnail}" alt="${title}" class="video-thumbnail">
                     </div>
                     <div class="video-info">
-                        <div class="video-title">${video.title}</div>
-                        <div class="video-duration">Video ${index + 1}</div>
+                        <div class="video-title">${title}</div>
+                        <div class="video-duration">${duration || 'Video ' + (index + 1)}</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="progress-text">${progress}% watched</div>
                     </div>
                 `;
+                
                 videoCard.addEventListener('click', () => {
-                    if (videoId) {
-                        showPlayerScreen(videoId, video.title, currentPlaylistId, thumbnail);
-                    }
+                    showPlayerScreen(videoId, title, currentPlaylistId, thumbnail);
                 });
+                
                 videosGrid.appendChild(videoCard);
             });
         }
 
-        // Show player screen with progress tracking
+        // Show player screen
         function showPlayerScreen(videoId, videoTitle, playlistId, thumbnail) {
             homeScreen.classList.remove('active');
             playlistScreen.classList.remove('active');
             playerScreen.classList.add('active');
             addBtn.classList.remove('active');
+            
             currentVideoId = videoId;
             currentPlaylistId = playlistId;
             playerScreenTitle.textContent = videoTitle;
-
-            // Fetch thumbnail if not provided or invalid
-            if (!thumbnail || thumbnail.includes('via.placeholder.com')) {
-                fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${API_KEY}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.items && data.items.length > 0) {
-                            thumbnail = data.items[0].snippet.thumbnails?.medium?.url || 'https://via.placeholder.com/320x180?text=No+Thumbnail';
-                            saveRecentVideo(videoId, videoTitle, thumbnail, playlistId);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching video thumbnail:', error);
-                    });
-            } else {
-                saveRecentVideo(videoId, videoTitle, thumbnail, playlistId);
-            }
-
+            
+            // Save to recent videos (with thumbnail if available)
+            saveRecentVideo(videoId, videoTitle, thumbnail, playlistId);
+            
+            // Create player iframe
             videoPlayer.innerHTML = `
                 <iframe 
-                    id="ytplayer"
-                    src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1" 
+                    id="ytplayer" 
+                    src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&rel=0&modestbranding=1" 
                     frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
+                    allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                ></iframe>
             `;
+            
+            // Initialize YouTube player
+            initializePlayer();
+        }
 
-            // Initialize YouTube Player for progress tracking
-            let player;
-            window.onYouTubeIframeAPIReady = function() {
-                player = new YT.Player('ytplayer', {
-                    events: {
-                        'onReady': onPlayerReady,
-                        'onStateChange': onPlayerStateChange
-                    }
-                });
-            };
-
-            function onPlayerReady(event) {
-                // Optionally start the video
-                event.target.playVideo();
+        // Initialize YouTube player
+        function initializePlayer() {
+            // Check if YT API is loaded
+            if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+                window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+                return;
             }
-
-            let lastUpdateTime = 0;
-            function onPlayerStateChange(event) {
-                if (event.data === YT.PlayerState.PLAYING) {
-                    const duration = player.getDuration();
-                    const updateProgress = setInterval(() => {
-                        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-                            const currentTime = player.getCurrentTime();
-                            const now = Date.now();
-                            if (now - lastUpdateTime >= 5000) { // Update every 5 seconds
-                                const progress = (currentTime / duration) * 100;
-                                updateRecentVideo(videoId, videoTitle, thumbnail, playlistId, progress);
-                                renderRecentVideos();
-                                lastUpdateTime = now;
-                            }
-                        } else {
-                            clearInterval(updateProgress);
-                        }
-                    }, 1000);
+            
+            new YT.Player('ytplayer', {
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
                 }
+            });
+        }
+
+        function onYouTubeIframeAPIReady() {
+            new YT.Player('ytplayer', {
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            event.target.playVideo();
+            
+            // Load existing progress if available
+            if (videoProgress[currentVideoId]) {
+                const duration = event.target.getDuration();
+                const targetTime = (videoProgress[currentVideoId] / 100) * duration;
+                event.target.seekTo(targetTime);
             }
+        }
+
+        function onPlayerStateChange(event) {
+            // Track progress when playing
+            if (event.data === YT.PlayerState.PLAYING) {
+                trackVideoProgress(event.target);
+            }
+        }
+
+        function trackVideoProgress(player) {
+            // Clear any existing interval
+            if (window.progressInterval) {
+                clearInterval(window.progressInterval);
+            }
+            
+            // Set up new interval
+            window.progressInterval = setInterval(() => {
+                try {
+                    const duration = player.getDuration();
+                    const currentTime = player.getCurrentTime();
+                    const progress = (currentTime / duration) * 100;
+                    
+                    // Save progress
+                    saveVideoProgress(currentVideoId, progress);
+                    
+                    // Update UI
+                    updateProgressUI(currentVideoId, progress);
+                } catch (e) {
+                    console.error('Progress tracking error:', e);
+                    clearInterval(window.progressInterval);
+                }
+            }, 1000);
+        }
+
+        function updateProgressUI(videoId, progress) {
+            // Update in recent videos
+            document.querySelectorAll('.recent-video-card').forEach(card => {
+                if (card.querySelector('.recent-video-title').textContent === playerScreenTitle.textContent) {
+                    const bar = card.querySelector('.progress-bar');
+                    const text = card.querySelector('.progress-text');
+                    if (bar) bar.style.width = `${Math.round(progress)}%`;
+                    if (text) text.textContent = `${Math.round(progress)}% watched`;
+                }
+            });
+            
+            // Update in playlist view
+            document.querySelectorAll('.video-card').forEach(card => {
+                if (card.querySelector('.video-title').textContent === playerScreenTitle.textContent) {
+                    const bar = card.querySelector('.progress-bar');
+                    const text = card.querySelector('.progress-text');
+                    if (bar) bar.style.width = `${Math.round(progress)}%`;
+                    if (text) text.textContent = `${Math.round(progress)}% watched`;
+                }
+            });
         }
 
         // Handle back navigation from player screen
         function handleBackFromPlayer() {
+            // Pause video if playing
             pauseVideo();
-            if (currentPlaylistId && playlists.find(p => p.id === currentPlaylistId)) {
+            
+            if (currentPlaylistId && playlists.some(p => p.id === currentPlaylistId)) {
+                // Go back to playlist
                 const playlist = playlists.find(p => p.id === currentPlaylistId);
                 showPlaylistScreen(playlist.info, playlist.videos);
             } else {
+                // Go back to home
                 showHomeScreen();
+            }
+        }
+
+        // Pause video
+        function pauseVideo() {
+            const iframe = document.getElementById('ytplayer');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+            }
+            
+            // Clear progress tracking
+            if (window.progressInterval) {
+                clearInterval(window.progressInterval);
             }
         }
 
@@ -1086,43 +1268,47 @@
             playerScreen.classList.remove('active');
             homeScreen.classList.add('active');
             addBtn.classList.add('active');
+            
+            // Reset inputs
             urlInput.value = '';
             dialogUrlInput.value = '';
+            
+            // Update UI
             renderPlaylists();
             renderRecentVideos();
         }
 
-        // Pause video when navigating back
-        function pauseVideo() {
-            const iframe = videoPlayer.querySelector('iframe');
-            if (iframe) {
-                iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-            }
-        }
-
         // Show loading state
         function showLoading() {
-            loading.style.display = 'flex';
+            document.querySelectorAll('.loading').forEach(el => {
+                el.style.display = 'flex';
+            });
         }
 
         // Hide loading state
         function hideLoading() {
-            loading.style.display = 'none';
+            document.querySelectorAll('.loading').forEach(el => {
+                el.style.display = 'none';
+            });
         }
 
         // Show error message
         function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.textContent = message;
+                el.style.display = 'block';
+            });
         }
 
         // Clear error message
         function clearError() {
-            errorMessage.textContent = '';
-            errorMessage.style.display = 'none';
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.textContent = '';
+                el.style.display = 'none';
+            });
         }
 
-        // Initialize the app when the page loads
+        // Initialize the app
         window.onload = init;
     </script>
 </body>
