@@ -403,10 +403,16 @@
             }
 
 .recent-learning-grid, .playlists-grid, .videos-grid {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 280px)); /* Fixed column width */
-        gap: 8px; /* Consistent spacing */
-        justify-content: start; /* Keep left alignment */
-        justify-items: start; /* Keep left alignment for items */
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Flexible column width for mobile */
+        gap: 12px; /* Slightly larger gap for better spacing on mobile */
+        justify-content: center; /* Center the grid for a balanced look */
+        justify-items: center; /* Center items within their cells */
+        padding: 0 12px; /* Add padding to avoid edge-to-edge cards */
+    }
+
+    .recent-video-card, .playlist-card, .video-card {
+        max-width: 100%; /* Allow cards to take full available width */
+        width: 100%; /* Ensure cards fill the column */
     }
 
             .header h1 {
@@ -435,12 +441,18 @@
         }
 
         @media (max-width: 480px) {
-            .recent-video-thumbnail, .playlist-thumbnail, .video-thumbnail {
-               width: 100%;
-    height: 160px;
-    object-fit: cover;
-    border-radius: 12px 12px 0 0;
-            }
+        .recent-learning-grid, .playlists-grid, .videos-grid {
+        grid-template-columns: 1fr; /* Single column for very small screens */
+        gap: 10px; /* Slightly smaller gap for compact layout */
+        justify-content: center; /* Keep centered */
+        justify-items: center; /* Keep centered */
+        padding: 0 8px; /* Reduced padding for narrow screens */
+    }
+
+    .recent-video-card, .playlist-card, .video-card {
+        max-width: 100%; /* Full width for cards */
+        width: 100%; /* Ensure cards fill the column */
+    }
         }
     </style>
 </head>
