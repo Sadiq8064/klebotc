@@ -5,533 +5,521 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Learning Platform</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
 
-        body {
-            background: #f8fafc;
-            color: #1e293b;
-            min-height: 100vh;
-            line-height: 1.5;
-        }
-/* Menu Button and Dropdown */
-.menu-btn {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: #64748b;
-    cursor: pointer;
-    padding: 4px;
-}
+    body {
+        background: #000000;
+        color: #ffffff;
+        min-height: 100vh;
+        line-height: 1.5;
+    }
 
-.menu-btn:hover {
-    color: #1e293b;
-}
+    /* Menu Button and Dropdown */
+    .menu-btn {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        color: #b0b0b0;
+        cursor: pointer;
+        padding: 4px;
+    }
 
-.dropdown-menu {
-    position: absolute;
-    bottom: 30px;
-    right: 10px;
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    z-index: 10;
-    display: none;
-    min-width: 120px;
-}
+    .menu-btn:hover {
+        color: #ffffff;
+    }
 
-.dropdown-menu.active {
-    display: block;
-}
+    .dropdown-menu {
+        position: absolute;
+        bottom: 30px;
+        right: 10px;
+        background: #1a1a1a;
+        border-radius: 8px;
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+        z-index: 10;
+        display: none;
+        min-width: 120px;
+    }
 
-.dropdown-item {
+    .dropdown-menu.active {
+        display: block;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        color: #ff5555;
+        cursor: pointer;
+        border-radius: 8px;
+    }
+
+    .dropdown-item:hover {
+        background: #2a2a2a;
+    }
+
+    .dropdown-item svg {
+        margin-right: 8px;
+    }
+
+    .playlist-card {
+        position: relative;
+    }
+
+    .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 32px 16px; /* Natural top padding */
+        min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+        text-align: center;
+        margin: 32px 0;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 8px;
+    }
+
+    .header p {
+        font-size: 1rem;
+        color: #b0b0b0;
+    }
+
+    /* Dialog Box */
+    .dialog-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .dialog-box {
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 20px;
+        max-width: 480px;
+        width: 90%;
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .dialog-box h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 12px;
+    }
+
+    .dialog-box .url-input {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 0.95rem;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        outline: none;
+        background: #2a2a2a;
+        color: #ffffff;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .dialog-box .url-input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+    }
+
+    .dialog-box .url-input::placeholder {
+        color: #b0b0b0;
+    }
+
+    .dialog-box .button-group {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .cancel-btn {
+        padding: 8px 14px;
+        background: #2a2a2a;
+        color: #3b82f6;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .cancel-btn:hover {
+        background: #3a3a3a;
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Add Button */
+    .add-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 48px;
+        height: 48px;
+        background: #3b82f6;
+        color: #ffffff;
+        border: none;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+        transition: background 0.2s ease, transform 0.2s ease;
+        z-index: 1000;
+    }
+
+    .add-btn:hover {
+        background: #2563eb;
+        transform: scale(1.1);
+    }
+
+    .add-btn.active {
+        display: flex;
+    }
+
+    /* Sections */
+    .recent-learning-section, .playlists-section {
+        margin-bottom: 32px;
+        width: 100%;
+        display: none;
+    }
+
+    .recent-learning-section.active, .playlists-section.active {
+        display: block;
+    }
+
+    .recent-learning-grid, .playlists-grid, .videos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 280px));
+        gap: 8px;
+        justify-content: start; /* Reverted to left alignment */
+        width: 100%;
+    }
+
+    .recent-video-card, .playlist-card, .video-card {
+        background: #1a1a1a;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+        max-width: 280px;
+        width: 100%;
+    }
+
+    .recent-video-card:hover, .playlist-card:hover, .video-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+    }
+
+    .recent-video-thumbnail, .playlist-thumbnail, .video-thumbnail {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .recent-video-info, .playlist-info, .video-info {
+        padding: 10px;
+    }
+
+    .recent-video-title, .playlist-title, .video-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 4px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .recent-video-duration, .playlist-video-count, .video-duration {
+        font-size: 0.85rem;
+        color: #b0b0b0;
+        font-weight: 400;
+    }
+
+    .progress-container {
+        margin-top: 6px;
+        background: #3a3a3a;
+        border-radius: 4px;
+        height: 5px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: #3b82f6;
+        transition: width 0.2s ease;
+    }
+
+    .progress-text {
+        font-size: 0.8rem;
+        color: #b0b0b0;
+        margin-top: 4px;
+    }
+
+    /* Playlist Screen */
+/* Playlist Header */
+.playlist-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    color: #dc2626;
-    cursor: pointer;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
+   
+    padding: 10px 16px; /* Consistent padding */
+}
+
+.playlist-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #ffffff; /* Bright white for contrast */
+}
+
+.back-btn {
+    padding: 8px 14px;
+    background-color: #2a2a2a; /* Subtle dark gray */
+    color: #3b82f6; /* Blue for the button text */
+    border: 1px solid #3a3a3a; /* Matching border */
     border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease; /* Simple hover transition */
 }
 
-.dropdown-item:hover {
-    background: #fee2e2;
+.back-btn:hover {
+    background-color: #3a3a3a; /* Slightly lighter on hover */
 }
 
-.dropdown-item svg {
-    margin-right: 8px;
+    /* Player Screen */
+  /* Player Container */
+.player-container {
+    max-width: 896px;
+    margin: 0 auto;
 }
 
-.playlist-card {
-    position: relative;
+/* Player Header */
+.player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  
+    padding: 10px 16px; /* Consistent padding */
+  
 }
 
+.player-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #ffffff; /* White text for contrast */
+}
+
+    .video-player {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%;
+        margin-bottom: 16px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+    }
+
+    .video-player iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 12px;
+    }
+
+    /* Loading State */
+    .loading {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        padding: 32px;
+    }
+
+    .loading-spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid rgba(59, 130, 246, 0.2);
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Error State */
+    .error-message {
+        display: none;
+        padding: 10px;
+        background: #4a1a1a;
+        color: #ff5555;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        text-align: center;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* Screen Transitions */
+    .screen {
+        display: none;
+        width: 100%;
+        min-height: 100vh;
+        background: #000000;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .screen.active {
+        display: block;
+    }
+
+    /* Empty State */
+    .empty-state {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 60vh;
+        text-align: center;
+        width: 100%;
+    }
+
+    .empty-state.active {
+        display: flex;
+    }
+
+    #lottie-animation {
+        width: 200px;
+        height: 200px;
+        margin-bottom: 16px;
+    }
+
+    .empty-state-text {
+        font-size: 1rem;
+        color: #3b82f6;
+        font-weight: 500;
+        max-width: 300px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
         .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 16px;
-        }
-
-        /* Header */
-        .header {
-            text-align: center;
-            margin: 32px 0;
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            font-size: 1rem;
-            color: #64748b;
-        }
-
-        /* Input Section */
-        .input-section {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-            max-width: 640px;
-            margin: 0 auto 24px;
-            transition: transform 0.2s ease;
-        }
-
-        .input-section:hover {
-            transform: translateY(-2px);
-        }
-
-        .input-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .url-input {
-            flex: 1;
-            padding: 10px 14px;
-            font-size: 0.95rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            outline: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .url-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .url-input::placeholder {
-            color: #94a3b8;
-        }
-
-        .submit-btn {
-            padding: 10px 20px;
-            background: #3b82f6;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease;
-        }
-
-        .submit-btn:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
-        }
-
-        .submit-btn:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Dialog Box */
-        .dialog-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .dialog-box {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 20px;
-            max-width: 480px;
-            width: 90%;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-            animation: slideIn 0.3s ease-out;
-        }
-
-        .dialog-box h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 12px;
-        }
-
-        .dialog-box .button-group {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-        }
-
-        .cancel-btn {
-            padding: 8px 14px;
-            background: #f1f5f9;
-            color: #3b82f6;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .cancel-btn:hover {
-            background: #e2e8f0;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Add Button */
-        .add-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 48px;
-            height: 48px;
-            background: #3b82f6;
-            color: #ffffff;
-            border: none;
-            border-radius: 50%;
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-            transition: background 0.2s ease, transform 0.2s ease;
-        }
-
-        .add-btn:hover {
-            background: #2563eb;
-            transform: scale(1.1);
-        }
-
-        .add-btn.active {
-            display: flex;
-        }
-
-        /* Sections */
-        .recent-learning-section, .playlists-section {
-            margin-bottom: 32px;
-            display: none;
-        }
-
-        .recent-learning-section.active, .playlists-section.active {
-            display: block;
+            padding: 12px;
         }
 
         .recent-learning-grid, .playlists-grid, .videos-grid {
-           display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 280px)); /* Fixed column width */
-    gap: 8px; /* Consistent spacing between cards */
-    justify-content: start; /* Align grid to the left */
-    justify-items: start;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            justify-content: center; /* Adjusted back to center for smaller screens, but can revert to start */
+            justify-items: center;
+            padding: 0 12px;
         }
 
         .recent-video-card, .playlist-card, .video-card {
-    background: #ffffff;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    cursor: pointer;
-    max-width: 280px; /* Match the grid column width */
-    width: 100%;
-        }
-
-        .recent-video-card:hover, .playlist-card:hover, .video-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-        }
-
-        .recent-video-thumbnail, .playlist-thumbnail, .video-thumbnail {
+            max-width: 100%;
             width: 100%;
-            height: 160px;
-            object-fit: cover;
-            border-radius: 12px 12px 0 0;
         }
 
-        .recent-video-info, .playlist-info, .video-info {
-            padding: 10px;
+        .header h1 {
+            font-size: 1.75rem;
         }
 
-        .recent-video-title, .playlist-title, .video-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 4px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .recent-video-duration, .playlist-video-count, .video-duration {
-            font-size: 0.85rem;
-            color: #64748b;
-            font-weight: 400;
-        }
-
-        .progress-container {
-            margin-top: 6px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            height: 5px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: #3b82f6;
-            transition: width 0.2s ease;
-        }
-
-        .progress-text {
-            font-size: 0.8rem;
-            color: #64748b;
-            margin-top: 4px;
-        }
-
-        /* Playlist Screen */
-        .playlist-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .playlist-header h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .back-btn {
-            padding: 8px 14px;
-            background: #f1f5f9;
-            color: #3b82f6;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .back-btn:hover {
-            background: #e2e8f0;
-        }
-
-        /* Player Screen */
-        .player-container {
-            max-width: 896px;
-            margin: 0 auto;
-        }
-
-        .player-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .player-header h2 {
+        .add-btn {
+            width: 44px;
+            height: 44px;
             font-size: 1.25rem;
-            font-weight: 600;
-            color: #1e293b;
         }
 
-        .video-player {
-            position: relative;
+        .dialog-box {
+            width: 95%;
+            padding: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .recent-learning-grid, .playlists-grid, .videos-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            justify-content: center; /* Adjusted back to center for smaller screens, but can revert to start */
+            justify-items: center;
+            padding: 0 8px;
+        }
+
+        .recent-video-card, .playlist-card, .video-card {
+            max-width: 100%;
             width: 100%;
-            padding-top: 56.25%;
-            margin-bottom: 16px;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
-
-        .video-player iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 12px;
-        }
-
-        /* Loading State */
-        .loading {
-            display: none;
-            justify-content: center;
-            align-items: center;
-            padding: 32px;
-        }
-
-        .loading-spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid rgba(59, 130, 246, 0.2);
-            border-top-color: #3b82f6;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Error State */
-        .error-message {
-            display: none;
-            padding: 10px;
-            background: #fee2e2;
-            color: #dc2626;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            text-align: center;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        /* Screen Transitions */
-        .screen {
-            display: none;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .screen.active {
-            display: block;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                padding: 12px;
-            }
-
-.recent-learning-grid, .playlists-grid, .videos-grid {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Flexible column width for mobile */
-        gap: 12px; /* Slightly larger gap for better spacing on mobile */
-        justify-content: center; /* Center the grid for a balanced look */
-        justify-items: center; /* Center items within their cells */
-        padding: 0 12px; /* Add padding to avoid edge-to-edge cards */
     }
-
-    .recent-video-card, .playlist-card, .video-card {
-        max-width: 100%; /* Allow cards to take full available width */
-        width: 100%; /* Ensure cards fill the column */
-    }
-
-            .header h1 {
-                font-size: 1.75rem;
-            }
-
-            .input-group {
-                flex-direction: column;
-            }
-
-            .submit-btn {
-                width: 100%;
-                padding: 10px;
-            }
-
-            .add-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 1.25rem;
-            }
-
-            .dialog-box {
-                width: 95%;
-                padding: 16px;
-            }
-        }
-
-        @media (max-width: 480px) {
-          .recent-learning-grid, .playlists-grid, .videos-grid {
-        grid-template-columns: 1fr; /* Single column for very small screens */
-        gap: 10px; /* Slightly smaller gap for compact layout */
-        justify-content: center; /* Keep centered */
-        justify-items: center; /* Keep centered */
-        padding: 0 8px; /* Reduced padding for narrow screens */
-    }
-
-    .recent-video-card, .playlist-card, .video-card {
-        max-width: 100%; /* Full width for cards */
-        width: 100%; /* Ensure cards fill the column */
-    }
-        }
-    </style>
+</style>
 </head>
 <body>
     <div class="container">
-       
-
         <!-- Home Screen -->
         <div class="screen active" id="home-screen">
-            <div class="input-section" id="input-section">
-                <div class="input-group">
-                    <input type="text" class="url-input" placeholder="Paste YouTube playlist or video URL...">
-                    <button class="submit-btn">Add</button>
-                </div>
+            <div class="empty-state" id="empty-state">
+                <div id="lottie-animation"></div>
+                <p class="empty-state-text">Press the plus icon below to add your YouTube playlist or video</p>
             </div>
             <div class="error-message"></div>
             <div class="loading">
                 <div class="loading-spinner"></div>
             </div>
             <div class="recent-learning-section" id="recent-learning-section">
-                <h2 style="font-size: 1.5rem; font-weight: 600; color: #1e293b; margin-bottom: 16px;">Recent Learning</h2>
+                <h2 style="font-size: 1.5rem; font-weight: 600; color: #ffffff; margin-bottom: 16px;">Recent Learning</h2>
                 <div class="recent-learning-grid" id="recent-learning-grid"></div>
             </div>
             <div class="playlists-section" id="playlists-section">
-                <h2 style="font-size: 1.5rem; font-weight: 600; color: #1e293b; margin-bottom: 16px;">Your Playlists</h2>
+                <h2 style="font-size: 1.5rem; font-weight: 600; color: #ffffff; margin-bottom: 16px;">Your Playlists</h2>
                 <div class="playlists-grid" id="playlists-grid"></div>
             </div>
         </div>
@@ -572,9 +560,7 @@
             <div class="input-group">
                 <input type="text" class="url-input" id="dialog-url-input" placeholder="Paste YouTube playlist or video URL...">
             </div>
-            <div class=" перспек
-
-button-group">
+            <div class="button-group">
                 <button class="cancel-btn" id="dialog-cancel-btn">Cancel</button>
                 <button class="submit-btn" id="dialog-submit-btn">Add</button>
             </div>
@@ -584,6 +570,11 @@ button-group">
     <button class="add-btn" id="add-btn">+</button>
 
     <script>
+        // Load Lottie library
+        const lottieScript = document.createElement('script');
+        lottieScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js';
+        document.head.appendChild(lottieScript);
+
         const API_KEY = 'AIzaSyB0h3TxEUcmZDvYp91f_ZHKa8nE9Kxd9eA'; // Replace with your YouTube Data API key
 
         // DOM Elements
@@ -596,9 +587,6 @@ button-group">
             playlistsSection: document.getElementById('playlists-section'),
             playlistsGrid: document.getElementById('playlists-grid'),
             videosGrid: document.getElementById('videos-grid'),
-            inputSection: document.getElementById('input-section'),
-            urlInput: document.querySelector('#input-section .url-input'),
-            submitBtn: document.querySelector('#input-section .submit-btn'),
             errorMessages: document.querySelectorAll('.error-message'),
             loadingIndicators: document.querySelectorAll('.loading'),
             playlistScreenTitle: document.getElementById('playlist-screen-title'),
@@ -625,20 +613,27 @@ button-group">
         };
 
         // Initialize
-        function init() {
-            elements.homeScreen.classList.add('active');
-            elements.addBtn.classList.add('active');
-            bindEvents();
-            loadData();
-            setupYouTubePlayerAPI();
-        }
+      function init() {
+    elements.homeScreen.classList.add('active');
+    elements.addBtn.style.display = 'flex'; // Show add button on initial load
+    bindEvents();
+    loadData();
+    lottieScript.onload = () => {
+        lottie.loadAnimation({
+            container: document.getElementById('lottie-animation'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: 'https://ik.imagekit.io/njbqx8go1/lottie/ytfeature.json?updatedAt=1745309836294'
+        });
+    };
+    setupYouTubePlayerAPI();
+}
 
         // Bind events
         function bindEvents() {
-            elements.submitBtn.addEventListener('click', handleSubmit);
             elements.dialogSubmitBtn.addEventListener('click', handleDialogSubmit);
             elements.dialogCancelBtn.addEventListener('click', closeDialog);
-            elements.urlInput.addEventListener('keypress', e => e.key === 'Enter' && handleSubmit());
             elements.dialogUrlInput.addEventListener('keypress', e => e.key === 'Enter' && handleDialogSubmit());
             elements.backToHomeBtn.addEventListener('click', showHomeScreen);
             elements.backToPlaylistBtn.addEventListener('click', handleBackFromPlayer);
@@ -666,14 +661,7 @@ button-group">
         function toggleInputSection() {
             const hasPlaylists = state.playlists.length > 0;
             elements.playlistsSection.classList.toggle('active', hasPlaylists);
-            elements.inputSection.style.display = hasPlaylists ? 'none' : 'block';
-        }
-
-        // Handle form submission
-        async function handleSubmit() {
-            const url = elements.urlInput.value.trim();
-            if (!url) return;
-            await processUrl(url, elements.submitBtn);
+            document.getElementById('empty-state').classList.toggle('active', !hasPlaylists && state.recentVideos.length === 0);
         }
 
         // Handle dialog submission
@@ -683,365 +671,352 @@ button-group">
             await processUrl(url, elements.dialogSubmitBtn);
         }
 
-        //彼此
+        // Process URL
+        async function processUrl(url, button) {
+            try {
+                button.disabled = true;
+                showLoading();
+                clearError();
+                
+                const videoId = extractVideoId(url);
+                const playlistId = extractPlaylistId(url);
 
-// Process URL
-async function processUrl(url, button) {
-    try {
-        button.disabled = true;
-        showLoading();
-        clearError();
-        
-        const videoId = extractVideoId(url);
-        const playlistId = extractPlaylistId(url);
-
-        if (playlistId) {
-            await fetchPlaylist(playlistId);
-        } else if (videoId) {
-            await fetchVideo(videoId, true);
-        } else {
-            throw new Error('Invalid YouTube URL');
-        }
-    } catch (error) {
-        showError(error.message || 'Failed to load content');
-    } finally {
-        button.disabled = false;
-        hideLoading();
-    }
-}
-
-// Extract video ID
-function extractVideoId(url) {
-    const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return match && match[2].length === 11 ? match[2] : null;
-}
-
-// Extract playlist ID
-function extractPlaylistId(url) {
-    const regExp = /[&?]list=([^&]+)/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-}
-
-// Fetch playlist
-async function fetchPlaylist(playlistId) {
-    state.currentPlaylistId = playlistId;
-    const playlistResponse = await fetch(
-        `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistId}&key=${API_KEY}`
-    );
-    const playlistData = await playlistResponse.json();
-
-    if (!playlistData.items?.length) {
-        throw new Error('Playlist not found');
-    }
-
-    const itemsResponse = await fetch(
-        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=${playlistId}&key=${API_KEY}`
-    );
-    const itemsData = await itemsResponse.json();
-
-    if (!itemsData.items?.length) {
-        throw new Error('Playlist is empty');
-    }
-
-    const playlistInfo = playlistData.items[0].snippet;
-    const videos = itemsData.items.map(item => ({
-        ...item.snippet,
-        duration: item.contentDetails?.duration
-    }));
-
-    savePlaylist(playlistId, playlistInfo, videos);
-    renderPlaylists();
-    showPlaylistScreen(playlistInfo, videos);
-    closeDialog();
-}
-
-// Fetch single video
-async function fetchVideo(videoId, goToPlayer) {
-    const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${API_KEY}`
-    );
-    const data = await response.json();
-
-    if (!data.items?.length) {
-        throw new Error('Video not found');
-    }
-
-    const videoInfo = data.items[0].snippet;
-    const duration = data.items[0].contentDetails.duration;
-    const playlistId = `single_${videoId}`;
-
-    const playlistInfo = {
-        title: videoInfo.title,
-        thumbnails: videoInfo.thumbnails,
-        channelTitle: videoInfo.channelTitle
-    };
-
-    const videos = [{
-        title: videoInfo.title,
-        resourceId: { videoId },
-        thumbnails: videoInfo.thumbnails,
-        duration: formatDuration(duration)
-    }];
-
-    savePlaylist(playlistId, playlistInfo, videos);
-    saveRecentVideo(videoId, videoInfo.title, videoInfo.thumbnails?.medium?.url, playlistId);
-    
-    if (goToPlayer) {
-        showPlayerScreen(videoId, videoInfo.title, playlistId, videoInfo.thumbnails?.medium?.url);
-    } else {
-        showPlaylistScreen(playlistInfo, videos);
-    }
-
-    renderPlaylists();
-    renderRecentVideos();
-    closeDialog();
-}
-
-// Format duration
-function formatDuration(duration) {
-    if (!duration) return 'N/A';
-    const matches = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-    const hours = matches[1] ? parseInt(matches[1]) : 0;
-    const minutes = matches[2] ? parseInt(matches[2]) : 0;
-    const seconds = matches[3] ? parseInt(matches[3]) : 0;
-    return [
-        hours ? `${hours}h` : '',
-        minutes ? `${minutes}m` : '',
-        seconds ? `${seconds}s` : ''
-    ].filter(Boolean).join(' ') || '0s';
-}
-
-// Save playlist
-function savePlaylist(playlistId, playlistInfo, videos) {
-    const playlistData = {
-        id: playlistId,
-        info: playlistInfo,
-        videos
-    };
-
-    const existingIndex = state.playlists.findIndex(p => p.id === playlistId);
-    if (existingIndex >= 0) {
-        state.playlists[existingIndex] = playlistData;
-    } else {
-        state.playlists.unshift(playlistData);
-        if (state.playlists.length > 50) {
-            state.playlists.pop();
-        }
-    }
-
-    localStorage.setItem('youtubePlaylists', JSON.stringify(state.playlists));
-}
-
-// Save recent video
-function saveRecentVideo(videoId, videoTitle, thumbnail, playlistId) {
-    const videoData = {
-        id: videoId,
-        title: videoTitle,
-        thumbnail: thumbnail || 'https://via.placeholder.com/280x160?text=No+Thumbnail',
-        playlistId,
-        timestamp: Date.now()
-    };
-
-    state.recentVideos = [
-        videoData,
-        ...state.recentVideos.filter(v => v.id !== videoId)
-    ].slice(0, 3);
-
-    localStorage.setItem('recentVideos', JSON.stringify(state.recentVideos));
-}
-
-// Render recent videos
-function renderRecentVideos() {
-    elements.recentLearningGrid.innerHTML = '';
-    elements.recentLearningSection.classList.toggle('active', state.recentVideos.length > 0);
-
-    state.recentVideos.forEach(video => {
-        const card = document.createElement('div');
-        card.className = 'recent-video-card';
-        const progress = state.videoProgress[video.id] || 0;
-
-        card.innerHTML = `
-            <img src="${video.thumbnail}" alt="${video.title}" class="recent-video-thumbnail">
-            <div class="recent-video-info">
-                <div class="recent-video-title">${video.title}</div>
-                <div class="recent-video-duration">Recently watched</div>
-                <div class="progress-container">
-                    <div class="progress-bar" style="width: ${progress}%"></div>
-                </div>
-                <div class="progress-text">${Math.round(progress)}% watched</div>
-            </div>
-        `;
-
-        card.addEventListener('click', () => 
-            showPlayerScreen(video.id, video.title, video.playlistId, video.thumbnail)
-        );
-        elements.recentLearningGrid.appendChild(card);
-    });
-}
-
-// Render playlists
-// Add to existing functions
-function renderPlaylists() {
-    elements.playlistsGrid.innerHTML = '';
-    toggleInputSection();
-
-    state.playlists.forEach(playlist => {
-        const card = document.createElement('div');
-        card.className = 'playlist-card';
-        const thumbnail = playlist.videos[0]?.thumbnails?.medium?.url || 
-                        playlist.info.thumbnails?.medium?.url || 
-                        'https://via.placeholder.com/280x160?text=No+Thumbnail';
-
-        card.innerHTML = `
-            <img src="${thumbnail}" alt="${playlist.info.title}" class="playlist-thumbnail">
-            <div class="playlist-info">
-                <div class="playlist-title">${playlist.info.title || 'Untitled Playlist'}</div>
-                <div class="playlist-video-count">${playlist.videos.length} video${playlist.videos.length !== 1 ? 's' : ''}</div>
-            </div>
-            <button class="menu-btn" aria-label="Playlist options">⋮</button>
-            <div class="dropdown-menu">
-                <div class="dropdown-item" data-action="delete" data-playlist-id="${playlist.id}">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M5 6v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6M10 11v6M14 11v6"/>
-                    </svg>
-                    Delete
-                </div>
-            </div>
-        `;
-
-        // Menu button toggle
-        const menuBtn = card.querySelector('.menu-btn');
-        const dropdownMenu = card.querySelector('.dropdown-menu');
-        menuBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                if (menu !== dropdownMenu) menu.classList.remove('active');
-            });
-            dropdownMenu.classList.toggle('active');
-        });
-
-        // Delete action
-        const deleteItem = card.querySelector('.dropdown-item[data-action="delete"]');
-        deleteItem.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const playlistId = deleteItem.dataset.playlistId;
-            deletePlaylist(playlistId);
-            dropdownMenu.classList.remove('active');
-        });
-
-        card.addEventListener('click', (e) => {
-            if (!e.target.closest('.menu-btn, .dropdown-menu')) {
-                state.currentPlaylistId = playlist.id;
-                showPlaylistScreen(playlist.info, playlist.videos);
+                if (playlistId) {
+                    await fetchPlaylist(playlistId);
+                } else if (videoId) {
+                    await fetchVideo(videoId, true);
+                } else {
+                    throw new Error('Invalid YouTube URL');
+                }
+            } catch (error) {
+                showError(error.message || 'Failed to load content');
+            } finally {
+                button.disabled = false;
+                hideLoading();
             }
-        });
-        elements.playlistsGrid.appendChild(card);
-    });
+        }
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.menu-btn, .dropdown-menu')) {
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                menu.classList.remove('active');
+        // Extract video ID
+        function extractVideoId(url) {
+            const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return match && match[2].length === 11 ? match[2] : null;
+        }
+
+        // Extract playlist ID
+        function extractPlaylistId(url) {
+            const regExp = /[&?]list=([^&]+)/;
+            const match = url.match(regExp);
+            return match ? match[1] : null;
+        }
+
+        // Fetch playlist
+        async function fetchPlaylist(playlistId) {
+            state.currentPlaylistId = playlistId;
+            const playlistResponse = await fetch(
+                `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistId}&key=${API_KEY}`
+            );
+            const playlistData = await playlistResponse.json();
+
+            if (!playlistData.items?.length) {
+                throw new Error('Playlist not found');
+            }
+
+            const itemsResponse = await fetch(
+                `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=${playlistId}&key=${API_KEY}`
+            );
+            const itemsData = await itemsResponse.json();
+
+            if (!itemsData.items?.length) {
+                throw new Error('Playlist is empty');
+            }
+
+            const playlistInfo = playlistData.items[0].snippet;
+            const videos = itemsData.items.map(item => ({
+                ...item.snippet,
+                duration: item.contentDetails?.duration
+            }));
+
+            savePlaylist(playlistId, playlistInfo, videos);
+            renderPlaylists();
+            showPlaylistScreen(playlistInfo, videos);
+            closeDialog();
+        }
+
+        // Fetch single video
+        async function fetchVideo(videoId, goToPlayer) {
+            const response = await fetch(
+                `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${API_KEY}`
+            );
+            const data = await response.json();
+
+            if (!data.items?.length) {
+                throw new Error('Video not found');
+            }
+
+            const videoInfo = data.items[0].snippet;
+            const duration = data.items[0].contentDetails.duration;
+            const playlistId = `single_${videoId}`;
+
+            const playlistInfo = {
+                title: videoInfo.title,
+                thumbnails: videoInfo.thumbnails,
+                channelTitle: videoInfo.channelTitle
+            };
+
+            const videos = [{
+                title: videoInfo.title,
+                resourceId: { videoId },
+                thumbnails: videoInfo.thumbnails,
+                duration: formatDuration(duration)
+            }];
+
+            savePlaylist(playlistId, playlistInfo, videos);
+            saveRecentVideo(videoId, videoInfo.title, videoInfo.thumbnails?.medium?.url, playlistId);
+            
+            if (goToPlayer) {
+                showPlayerScreen(videoId, videoInfo.title, playlistId, videoInfo.thumbnails?.medium?.url);
+            } else {
+                showPlaylistScreen(playlistInfo, videos);
+            }
+
+            renderPlaylists();
+            renderRecentVideos();
+            closeDialog();
+        }
+
+        // Format duration
+        function formatDuration(duration) {
+            if (!duration) return 'N/A';
+            const matches = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+            const hours = matches[1] ? parseInt(matches[1]) : 0;
+            const minutes = matches[2] ? parseInt(matches[2]) : 0;
+            const seconds = matches[3] ? parseInt(matches[3]) : 0;
+            return [
+                hours ? `${hours}h` : '',
+                minutes ? `${minutes}m` : '',
+                seconds ? `${seconds}s` : ''
+            ].filter(Boolean).join(' ') || '0s';
+        }
+
+        // Save playlist
+        function savePlaylist(playlistId, playlistInfo, videos) {
+            const playlistData = {
+                id: playlistId,
+                info: playlistInfo,
+                videos
+            };
+
+            const existingIndex = state.playlists.findIndex(p => p.id === playlistId);
+            if (existingIndex >= 0) {
+                state.playlists[existingIndex] = playlistData;
+            } else {
+                state.playlists.unshift(playlistData);
+                if (state.playlists.length > 50) {
+                    state.playlists.pop();
+                }
+            }
+
+            localStorage.setItem('youtubePlaylists', JSON.stringify(state.playlists));
+        }
+
+        // Save recent video
+        function saveRecentVideo(videoId, videoTitle, thumbnail, playlistId) {
+            const videoData = {
+                id: videoId,
+                title: videoTitle,
+                thumbnail: thumbnail || 'https://via.placeholder.com/280x160?text=No+Thumbnail',
+                playlistId,
+                timestamp: Date.now()
+            };
+
+            state.recentVideos = [
+                videoData,
+                ...state.recentVideos.filter(v => v.id !== videoId)
+            ].slice(0, 3);
+
+            localStorage.setItem('recentVideos', JSON.stringify(state.recentVideos));
+        }
+
+        // Render recent videos
+        function renderRecentVideos() {
+            elements.recentLearningGrid.innerHTML = '';
+            elements.recentLearningSection.classList.toggle('active', state.recentVideos.length > 0);
+            document.getElementById('empty-state').classList.toggle('active', state.playlists.length === 0 && state.recentVideos.length === 0);
+
+            state.recentVideos.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'recent-video-card';
+                const progress = state.videoProgress[video.id] || 0;
+
+                card.innerHTML = `
+                    <img src="${video.thumbnail}" alt="${video.title}" class="recent-video-thumbnail">
+                    <div class="recent-video-info">
+                        <div class="recent-video-title">${video.title}</div>
+                        <div class="recent-video-duration">Recently watched</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="progress-text">${Math.round(progress)}% watched</div>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => 
+                    showPlayerScreen(video.id, video.title, video.playlistId, video.thumbnail)
+                );
+                elements.recentLearningGrid.appendChild(card);
             });
         }
-    });
-}
 
-// Delete playlist and clear associated data
-function deletePlaylist(playlistId) {
-    // Remove playlist from state
-    state.playlists = state.playlists.filter(p => p.id !== playlistId);
-    localStorage.setItem('youtubePlaylists', JSON.stringify(state.playlists));
+        // Render playlists
+        function renderPlaylists() {
+            elements.playlistsGrid.innerHTML = '';
+            toggleInputSection();
 
-    // Remove associated videos from recent videos
-    state.recentVideos = state.recentVideos.filter(v => v.playlistId !== playlistId);
-    localStorage.setItem('recentVideos', JSON.stringify(state.recentVideos));
+            state.playlists.forEach(playlist => {
+                const card = document.createElement('div');
+                card.className = 'playlist-card';
+                const thumbnail = playlist.videos[0]?.thumbnails?.medium?.url || 
+                                playlist.info.thumbnails?.medium?.url || 
+                                'https://via.placeholder.com/280x160?text=No+Thumbnail';
 
-    // Remove progress data for videos in the playlist
-    const playlist = state.playlists.find(p => p.id === playlistId);
-    if (playlist) {
-        playlist.videos.forEach(video => {
-            const videoId = video.resourceId?.videoId || video.id;
-            delete state.videoProgress[videoId];
-        });
-        localStorage.setItem('videoProgress', JSON.stringify(state.videoProgress));
-    }
+                card.innerHTML = `
+                    <img src="${thumbnail}" alt="${playlist.info.title}" class="playlist-thumbnail">
+                    <div class="playlist-info">
+                        <div class="playlist-title">${playlist.info.title || 'Untitled Playlist'}</div>
+                        <div class="playlist-video-count">${playlist.videos.length} video${playlist.videos.length !== 1 ? 's' : ''}</div>
+                    </div>
+                    <button class="menu-btn" aria-label="Playlist options">⋮</button>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item" data-action="delete" data-playlist-id="${playlist.id}">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M5 6v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6M10 11v6M14 11v6"/>
+                            </svg>
+                            Delete
+                        </div>
+                    </div>
+                `;
 
-    // Re-render UI
-    renderPlaylists();
-    renderRecentVideos();
-    toggleInputSection();
+                // Menu button toggle
+                const menuBtn = card.querySelector('.menu-btn');
+                const dropdownMenu = card.querySelector('.dropdown-menu');
+                menuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        if (menu !== dropdownMenu) menu.classList.remove('active');
+                    });
+                    dropdownMenu.classList.toggle('active');
+                });
 
-    // If currently viewing the deleted playlist, go back to home
-    if (state.currentPlaylistId === playlistId) {
-        showHomeScreen();
-    }
-}
+                // Delete action
+                const deleteItem = card.querySelector('.dropdown-item[data-action="delete"]');
+                deleteItem.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const playlistId = deleteItem.dataset.playlistId;
+                    deletePlaylist(playlistId);
+                    dropdownMenu.classList.remove('active');
+                });
 
-// Show playlist screen
+                card.addEventListener('click', (e) => {
+                    if (!e.target.closest('.menu-btn, .dropdown-menu')) {
+                        state.currentPlaylistId = playlist.id;
+                        showPlaylistScreen(playlist.info, playlist.videos);
+                    }
+                });
+                elements.playlistsGrid.appendChild(card);
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.menu-btn, .dropdown-menu')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        menu.classList.remove('active');
+                    });
+                }
+            });
+        }
+
+        // Delete playlist and clear associated data
+        function deletePlaylist(playlistId) {
+            state.playlists = state.playlists.filter(p => p.id !== playlistId);
+            localStorage.setItem('youtubePlaylists', JSON.stringify(state.playlists));
+            state.recentVideos = state.recentVideos.filter(v => v.playlistId !== playlistId);
+            localStorage.setItem('recentVideos', JSON.stringify(state.recentVideos));
+            const playlist = state.playlists.find(p => p.id === playlistId);
+            if (playlist) {
+                playlist.videos.forEach(video => {
+                    const videoId = video.resourceId?.videoId || video.id;
+                    delete state.videoProgress[videoId];
+                });
+                localStorage.setItem('videoProgress', JSON.stringify(state.videoProgress));
+            }
+            renderPlaylists();
+            renderRecentVideos();
+            toggleInputSection();
+            document.getElementById('empty-state').classList.toggle('active', state.playlists.length === 0 && state.recentVideos.length === 0);
+            if (state.currentPlaylistId === playlistId) {
+                showHomeScreen();
+            }
+        }
+
+        // Show playlist screen
 function showPlaylistScreen(playlistInfo, videos) {
     elements.homeScreen.classList.remove('active');
     elements.playerScreen.classList.remove('active');
     elements.playlistScreen.classList.add('active');
-    elements.addBtn.classList.remove('active');
+    elements.addBtn.style.display = 'none'; // Hide add button on playlist screen
     elements.playlistScreenTitle.textContent = playlistInfo.title || 'Untitled Playlist';
     state.videos = videos;
     renderVideos();
 }
 
-// Render videos
-function renderVideos() {
-    elements.videosGrid.innerHTML = '';
+        // Render videos
+        function renderVideos() {
+            elements.videosGrid.innerHTML = '';
 
-    if (!state.videos.length) {
-        elements.videosGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No videos found</p>';
-        return;
-    }
+            if (!state.videos.length) {
+                elements.videosGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No videos found</p>';
+                return;
+            }
 
-    state.videos.forEach((video, index) => {
-        const card = document.createElement('div');
-        card.className = 'video-card';
-        const videoId = video.resourceId?.videoId || video.id;
-        const title = video.title || 'Untitled Video';
-        const thumbnail = video.thumbnails?.medium?.url || 'https://via.placeholder.com/280x160?text=No+Thumbnail';
-        const progress = state.videoProgress[videoId] || 0;
-        const duration = video.duration || `Video ${index + 1}`;
+            state.videos.forEach((video, index) => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                const videoId = video.resourceId?.videoId || video.id;
+                const title = video.title || 'Untitled Video';
+                const thumbnail = video.thumbnails?.medium?.url || 'https://via.placeholder.com/280x160?text=No+Thumbnail';
+                const progress = state.videoProgress[videoId] || 0;
+                const duration = video.duration || `Video ${index + 1}`;
 
-        card.innerHTML = `
-            <img src="${thumbnail}" alt="${title}" class="video-thumbnail">
-            <div class="video-info">
-                <div class="video-title">${title}</div>
-                <div class="video-duration">${duration}</div>
-                <div class="progress-container">
-                    <div class="progress-bar" style="width: ${progress}%"></div>
-                </div>
-                <div class="progress-text">${Math.round(progress)}% watched</div>
-            </div>
-        `;
+                card.innerHTML = `
+                    <img src="${thumbnail}" alt="${title}" class="video-thumbnail">
+                    <div class="video-info">
+                        <div class="video-title">${title}</div>
+                        <div class="video-duration">${duration}</div>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="progress-text">${Math.round(progress)}% watched</div>
+                    </div>
+                `;
 
-        card.addEventListener('click', () => 
-            showPlayerScreen(videoId, title, state.currentPlaylistId, thumbnail)
-        );
-        elements.videosGrid.appendChild(card);
-    });
-}
+                card.addEventListener('click', () => 
+                    showPlayerScreen(videoId, title, state.currentPlaylistId, thumbnail)
+                );
+                elements.videosGrid.appendChild(card);
+            });
+        }
 
-// Show player screen
-function showPlayerScreen(videoId, videoTitle, playlistId, thumbnail) {
+        // Show player screen
+   function showPlayerScreen(videoId, videoTitle, playlistId, thumbnail) {
     elements.homeScreen.classList.remove('active');
     elements.playlistScreen.classList.remove('active');
     elements.playerScreen.classList.add('active');
-    elements.addBtn.classList.remove('active');
-    
+    elements.addBtn.style.display = 'none'; // Hide add button on player screen
     state.currentVideoId = videoId;
     state.currentPlaylistId = playlistId;
     elements.playerScreenTitle.textContent = videoTitle;
-    
     saveRecentVideo(videoId, videoTitle, thumbnail, playlistId);
-    
     elements.videoPlayer.innerHTML = `
         <iframe 
             id="ytplayer" 
@@ -1051,145 +1026,144 @@ function showPlayerScreen(videoId, videoTitle, playlistId, thumbnail) {
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         ></iframe>
     `;
-    
     initializePlayer();
 }
+        
 
-// Initialize YouTube player
-function initializePlayer() {
-    if (typeof YT === 'undefined' || !YT.Player) {
-        window.onYouTubeIframeAPIReady = () => {
+        // Initialize YouTube player
+        function initializePlayer() {
+            if (typeof YT === 'undefined' || !YT.Player) {
+                window.onYouTubeIframeAPIReady = () => {
+                    createPlayer();
+                };
+                return;
+            }
             createPlayer();
-        };
-        return;
-    }
-    createPlayer();
-}
+        }
 
-function createPlayer() {
-    state.player = new YT.Player('ytplayer', {
-        events: {
-            onReady: event => {
-                event.target.playVideo();
-                if (state.videoProgress[state.currentVideoId]) {
-                    const duration = event.target.getDuration();
-                    event.target.seekTo((state.videoProgress[state.currentVideoId] / 100) * duration);
+        function createPlayer() {
+            state.player = new YT.Player('ytplayer', {
+                events: {
+                    onReady: event => {
+                        event.target.playVideo();
+                        if (state.videoProgress[state.currentVideoId]) {
+                            const duration = event.target.getDuration();
+                            event.target.seekTo((state.videoProgress[state.currentVideoId] / 100) * duration);
+                        }
+                    },
+                    onStateChange: event => {
+                        if (event.data === YT.PlayerState.PLAYING) {
+                            trackVideoProgress(event.target);
+                        }
+                    }
                 }
-            },
-            onStateChange: event => {
-                if (event.data === YT.PlayerState.PLAYING) {
-                    trackVideoProgress(event.target);
+            });
+        }
+
+        // Track video progress
+        function trackVideoProgress(player) {
+            if (window.progressInterval) {
+                clearInterval(window.progressInterval);
+            }
+
+            window.progressInterval = setInterval(() => {
+                try {
+                    const duration = player.getDuration();
+                    const currentTime = player.getCurrentTime();
+                    const progress = (currentTime / duration) * 100;
+                    state.videoProgress[state.currentVideoId] = Math.max(
+                        state.videoProgress[state.currentVideoId] || 0,
+                        progress
+                    );
+                    localStorage.setItem('videoProgress', JSON.stringify(state.videoProgress));
+                    updateProgressUI(progress);
+                } catch (error) {
+                    console.error('Progress tracking error:', error);
+                    clearInterval(window.progressInterval);
                 }
+            }, 1000);
+        }
+
+        // Update progress UI
+        function updateProgressUI(progress) {
+            document.querySelectorAll('.recent-video-card, .video-card').forEach(card => {
+                if (card.querySelector('.video-title, .recent-video-title').textContent === elements.playerScreenTitle.textContent) {
+                    const bar = card.querySelector('.progress-bar');
+                    const text = card.querySelector('.progress-text');
+                    if (bar) bar.style.width = `${Math.round(progress)}%`;
+                    if (text) text.textContent = `${Math.round(progress)}% watched`;
+                }
+            });
+        }
+
+        // Handle back from player
+        function handleBackFromPlayer() {
+            pauseVideo();
+            const playlist = state.playlists.find(p => p.id === state.currentPlaylistId);
+            if (playlist) {
+                showPlaylistScreen(playlist.info, playlist.videos);
+            } else {
+                showHomeScreen();
             }
         }
-    });
-}
 
-// Track video progress
-function trackVideoProgress(player) {
-    if (window.progressInterval) {
-        clearInterval(window.progressInterval);
-    }
-
-    window.progressInterval = setInterval(() => {
-        try {
-            const duration = player.getDuration();
-            const currentTime = player.getCurrentTime();
-            const progress = (currentTime / duration) * 100;
-            state.videoProgress[state.currentVideoId] = Math.max(
-                state.videoProgress[state.currentVideoId] || 0,
-                progress
-            );
-            localStorage.setItem('videoProgress', JSON.stringify(state.videoProgress));
-            updateProgressUI(progress);
-        } catch (error) {
-            console.error('Progress tracking error:', error);
-            clearInterval(window.progressInterval);
+        // Pause video
+        function pauseVideo() {
+            if (state.player?.pauseVideo) {
+                state.player.pauseVideo();
+            }
+            if (window.progressInterval) {
+                clearInterval(window.progressInterval);
+            }
         }
-    }, 1000);
-}
 
-// Update progress UI
-function updateProgressUI(progress) {
-    document.querySelectorAll('.recent-video-card, .video-card').forEach(card => {
-        if (card.querySelector('.video-title, .recent-video-title').textContent === elements.playerScreenTitle.textContent) {
-            const bar = card.querySelector('.progress-bar');
-            const text = card.querySelector('.progress-text');
-            if (bar) bar.style.width = `${Math.round(progress)}%`;
-            if (text) text.textContent = `${Math.round(progress)}% watched`;
-        }
-    });
-}
-
-// Handle back from player
-function handleBackFromPlayer() {
-    pauseVideo();
-    const playlist = state.playlists.find(p => p.id === state.currentPlaylistId);
-    if (playlist) {
-        showPlaylistScreen(playlist.info, playlist.videos);
-    } else {
-        showHomeScreen();
-    }
-}
-
-// Pause video
-function pauseVideo() {
-    if (state.player?.pauseVideo) {
-        state.player.pauseVideo();
-    }
-    if (window.progressInterval) {
-        clearInterval(window.progressInterval);
-    }
-}
-
-// Show home screen
-function showHomeScreen() {
+        // Show home screen
+ function showHomeScreen() {
     elements.playlistScreen.classList.remove('active');
     elements.playerScreen.classList.remove('active');
     elements.homeScreen.classList.add('active');
-    elements.addBtn.classList.add('active');
-    elements.urlInput.value = '';
+    elements.addBtn.style.display = 'flex'; // Show add button on home screen
     elements.dialogUrlInput.value = '';
     renderPlaylists();
     renderRecentVideos();
 }
 
-// Dialog controls
-function openDialog() {
-    elements.dialogOverlay.style.display = 'flex';
-    elements.dialogUrlInput.focus();
-}
+        // Dialog controls
+        function openDialog() {
+            elements.dialogOverlay.style.display = 'flex';
+            elements.dialogUrlInput.focus();
+        }
 
-function closeDialog() {
-    elements.dialogOverlay.style.display = 'none';
-    elements.dialogUrlInput.value = '';
-}
+        function closeDialog() {
+            elements.dialogOverlay.style.display = 'none';
+            elements.dialogUrlInput.value = '';
+        }
 
-// UI utilities
-function showLoading() {
-    elements.loadingIndicators.forEach(el => el.style.display = 'flex');
-}
+        // UI utilities
+        function showLoading() {
+            elements.loadingIndicators.forEach(el => el.style.display = 'flex');
+        }
 
-function hideLoading() {
-    elements.loadingIndicators.forEach(el => el.style.display = 'none');
-}
+        function hideLoading() {
+            elements.loadingIndicators.forEach(el => el.style.display = 'none');
+        }
 
-function showError(message) {
-    elements.errorMessages.forEach(el => {
-        el.textContent = message;
-        el.style.display = 'block';
-    });
-}
+        function showError(message) {
+            elements.errorMessages.forEach(el => {
+                el.textContent = message;
+                el.style.display = 'block';
+            });
+        }
 
-function clearError() {
-    elements.errorMessages.forEach(el => {
-        el.textContent = '';
-        el.style.display = 'none';
-    });
-}
+        function clearError() {
+            elements.errorMessages.forEach(el => {
+                el.textContent = '';
+                el.style.display = 'none';
+            });
+        }
 
-// Start app
-window.onload = init;
+        // Start app
+        window.onload = init;
     </script>
 </body>
 </html>
