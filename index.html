@@ -793,7 +793,7 @@ function saveRecentVideo(videoId, videoTitle, thumbnail, playlistId) {
     state.recentVideos = [
         videoData,
         ...state.recentVideos.filter(v => v.id !== videoId)
-    ].slice(0, 3);
+    ].slice(0, 4);
 
     localStorage.setItem('recentVideos', JSON.stringify(state.recentVideos));
 }
