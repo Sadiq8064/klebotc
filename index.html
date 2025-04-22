@@ -19,6 +19,60 @@
             min-height: 100vh;
             line-height: 1.5;
         }
+/* Menu Button and Dropdown */
+.menu-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.menu-btn:hover {
+    color: #1e293b;
+}
+
+.dropdown-menu {
+    position: absolute;
+    bottom: 30px;
+    right: 10px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    display: none;
+    min-width: 120px;
+}
+
+.dropdown-menu.active {
+    display: block;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    color: #dc2626;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.dropdown-item:hover {
+    background: #fee2e2;
+}
+
+.dropdown-item svg {
+    margin-right: 8px;
+}
+
+.playlist-card {
+    position: relative;
+}
 
         .container {
             max-width: 1280px;
@@ -403,16 +457,10 @@
             }
 
 .recent-learning-grid, .playlists-grid, .videos-grid {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Flexible column width for mobile */
-        gap: 12px; /* Slightly larger gap for better spacing on mobile */
-        justify-content: center; /* Center the grid for a balanced look */
-        justify-items: center; /* Center items within their cells */
-        padding: 0 12px; /* Add padding to avoid edge-to-edge cards */
-    }
-
-    .recent-video-card, .playlist-card, .video-card {
-        max-width: 100%; /* Allow cards to take full available width */
-        width: 100%; /* Ensure cards fill the column */
+        grid-template-columns: repeat(auto-fit, minmax(280px, 280px)); /* Fixed column width */
+        gap: 8px; /* Consistent spacing */
+        justify-content: start; /* Keep left alignment */
+        justify-items: start; /* Keep left alignment for items */
     }
 
             .header h1 {
@@ -441,18 +489,12 @@
         }
 
         @media (max-width: 480px) {
-        .recent-learning-grid, .playlists-grid, .videos-grid {
-        grid-template-columns: 1fr; /* Single column for very small screens */
-        gap: 10px; /* Slightly smaller gap for compact layout */
-        justify-content: center; /* Keep centered */
-        justify-items: center; /* Keep centered */
-        padding: 0 8px; /* Reduced padding for narrow screens */
-    }
-
-    .recent-video-card, .playlist-card, .video-card {
-        max-width: 100%; /* Full width for cards */
-        width: 100%; /* Ensure cards fill the column */
-    }
+            .recent-video-thumbnail, .playlist-thumbnail, .video-thumbnail {
+               width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 12px 12px 0 0;
+            }
         }
     </style>
 </head>
@@ -793,7 +835,7 @@ function saveRecentVideo(videoId, videoTitle, thumbnail, playlistId) {
     state.recentVideos = [
         videoData,
         ...state.recentVideos.filter(v => v.id !== videoId)
-    ].slice(0, 4);
+    ].slice(0, 3);
 
     localStorage.setItem('recentVideos', JSON.stringify(state.recentVideos));
 }
@@ -828,6 +870,7 @@ function renderRecentVideos() {
 }
 
 // Render playlists
+// Add to existing functions
 function renderPlaylists() {
     elements.playlistsGrid.innerHTML = '';
     toggleInputSection();
@@ -845,14 +888,85 @@ function renderPlaylists() {
                 <div class="playlist-title">${playlist.info.title || 'Untitled Playlist'}</div>
                 <div class="playlist-video-count">${playlist.videos.length} video${playlist.videos.length !== 1 ? 's' : ''}</div>
             </div>
+            <button class="menu-btn" aria-label="Playlist options">⋮</button>
+            <div class="dropdown-menu">
+                <div class="dropdown-item" data-action="delete" data-playlist-id="${playlist.id}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M5 6v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6M10 11v6M14 11v6"/>
+                    </svg>
+                    Delete
+                </div>
+            </div>
         `;
 
-        card.addEventListener('click', () => {
-            state.currentPlaylistId = playlist.id;
-            showPlaylistScreen(playlist.info, playlist.videos);
+        // Menu button toggle
+        const menuBtn = card.querySelector('.menu-btn');
+        const dropdownMenu = card.querySelector('.dropdown-menu');
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if (menu !== dropdownMenu) menu.classList.remove('active');
+            });
+            dropdownMenu.classList.toggle('active');
+        });
+
+        // Delete action
+        const deleteItem = card.querySelector('.dropdown-item[data-action="delete"]');
+        deleteItem.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const playlistId = deleteItem.dataset.playlistId;
+            deletePlaylist(playlistId);
+            dropdownMenu.classList.remove('active');
+        });
+
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.menu-btn, .dropdown-menu')) {
+                state.currentPlaylistId = playlist.id;
+                showPlaylistScreen(playlist.info, playlist.videos);
+            }
         });
         elements.playlistsGrid.appendChild(card);
     });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.menu-btn, .dropdown-menu')) {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.classList.remove('active');
+            });
+        }
+    });
+}
+
+// Delete playlist and clear associated data
+function deletePlaylist(playlistId) {
+    // Remove playlist from state
+    state.playlists = state.playlists.filter(p => p.id !== playlistId);
+    localStorage.setItem('youtubePlaylists', JSON.stringify(state.playlists));
+
+    // Remove associated videos from recent videos
+    state.recentVideos = state.recentVideos.filter(v => v.playlistId !== playlistId);
+    localStorage.setItem('recentVideos', JSON.stringify(state.recentVideos));
+
+    // Remove progress data for videos in the playlist
+    const playlist = state.playlists.find(p => p.id === playlistId);
+    if (playlist) {
+        playlist.videos.forEach(video => {
+            const videoId = video.resourceId?.videoId || video.id;
+            delete state.videoProgress[videoId];
+        });
+        localStorage.setItem('videoProgress', JSON.stringify(state.videoProgress));
+    }
+
+    // Re-render UI
+    renderPlaylists();
+    renderRecentVideos();
+    toggleInputSection();
+
+    // If currently viewing the deleted playlist, go back to home
+    if (state.currentPlaylistId === playlistId) {
+        showHomeScreen();
+    }
 }
 
 // Show playlist screen
