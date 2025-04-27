@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Learning Platform</title>
@@ -651,7 +650,6 @@
         }
     }
 </style>
-     
 </head>
 <body>
     <div class="container">
@@ -764,7 +762,7 @@ const storageKey = urlParams.get('storageKey') || 'default';
 
 // Storage utility functions
 function getStorageKey(key) {
-    return ${storageKey}_${key};
+    return `${storageKey}_${key}`;
 }
 
 function setStorageItem(key, value) {
@@ -902,7 +900,7 @@ async function processUrl(url, button) {
 
 // Extract video ID
 function extractVideoId(url) {
-    const regExp = /^.(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]).*/;
+    const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return match && match[2].length === 11 ? match[2] : null;
 }
@@ -918,7 +916,7 @@ function extractPlaylistId(url) {
 async function fetchPlaylist(playlistId) {
     state.currentPlaylistId = playlistId;
     const playlistResponse = await fetch(
-        https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistId}&key=${API_KEY}
+        `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistId}&key=${API_KEY}`
     );
     const playlistData = await playlistResponse.json();
 
@@ -927,7 +925,7 @@ async function fetchPlaylist(playlistId) {
     }
 
     const itemsResponse = await fetch(
-        https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=${playlistId}&key=${API_KEY}
+        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=${playlistId}&key=${API_KEY}`
     );
     const itemsData = await itemsResponse.json();
 
@@ -953,7 +951,7 @@ async function fetchPlaylist(playlistId) {
 // Fetch single video
 async function fetchVideo(videoId, goToPlayer) {
     const response = await fetch(
-        https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${API_KEY}
+        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${API_KEY}`
     );
     const data = await response.json();
 
@@ -964,7 +962,7 @@ async function fetchVideo(videoId, goToPlayer) {
     const videoInfo = data.items[0].snippet;
     const duration = data.items[0].contentDetails.duration;
     const description = videoInfo.description || 'No description available';
-    const playlistId = single_${videoId};
+    const playlistId = `single_${videoId}`;
 
     const playlistInfo = {
         title: videoInfo.title,
@@ -1002,9 +1000,9 @@ function formatDuration(duration) {
     const minutes = matches[2] ? parseInt(matches[2]) : 0;
     const seconds = matches[3] ? parseInt(matches[3]) : 0;
     return [
-        hours ? ${hours}h : '',
-        minutes ? ${minutes}m : '',
-        seconds ? ${seconds}s : ''
+        hours ? `${hours}h` : '',
+        minutes ? `${minutes}m` : '',
+        seconds ? `${seconds}s` : ''
     ].filter(Boolean).join(' ') || '0s';
 }
 
@@ -1197,7 +1195,7 @@ function renderVideos() {
         const title = video.title || 'Untitled Video';
         const thumbnail = video.thumbnails?.medium?.url || 'https://via.placeholder.com/280x160?text=No+Thumbnail';
         const progress = state.videoProgress[videoId] || 0;
-        const duration = video.duration || Video ${index + 1};
+        const duration = video.duration || `Video ${index + 1}`;
 
         card.innerHTML = `
             <img src="${thumbnail}" alt="${title}" class="video-thumbnail">
@@ -1334,8 +1332,8 @@ function updateProgressUI(progress) {
         if (card.querySelector('.video-title, .recent-video-title').textContent === elements.playerScreenTitle.textContent) {
             const bar = card.querySelector('.progress-bar');
             const text = card.querySelector('.progress-text');
-            if (bar) bar.style.width = ${Math.round(progress)}%;
-            if (text) text.textContent = ${Math.round(progress)}% watched;
+            if (bar) bar.style.width = `${Math.round(progress)}%`;
+            if (text) text.textContent = `${Math.round(progress)}% watched`;
         }
     });
 }
@@ -1499,8 +1497,8 @@ function showContextMenu(x, y) {
         <div class="context-item" data-action="size-20">20px</div>
         <div class="context-item" data-action="size-24">24px</div>
     `;
-    menu.style.top = ${y}px;
-    menu.style.left = ${x}px;
+    menu.style.top = `${y}px`;
+    menu.style.left = `${x}px`;
     document.body.appendChild(menu);
 
     menu.addEventListener('click', (e) => {
